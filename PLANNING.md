@@ -254,9 +254,39 @@ Credor responde → fluxo inbound com contexto do disparo
 
 ---
 
+## Decisões Tomadas
+
+### Obtenção de Telefones para Outbound
+**Decisão**: BigData Corp / Neoway (após validação do modelo)
+
+**Estratégia de implementação**:
+1. **MVP**: Inbound-first + parceiros advogados (sem custo de aquisição)
+2. **Validação**: Confirmar unit economics com primeiras cessões
+3. **Escala**: Integrar BigData Corp/Neoway para enriquecimento de base
+
+**Fluxo de enriquecimento**:
+```
+RPV parseada do PDF (CPF + nome)
+        ↓
+Lambda enrich_telefone (batch diário)
+        ↓
+BigData Corp API (CPF → telefone)
+        ↓
+Salva em tabela leads_enriquecidos
+        ↓
+Elegível para outbound
+```
+
+**Considerações LGPD**:
+- Base legal: Legítimo interesse (benefício claro ao credor)
+- Requerer LIA (Legitimate Interest Assessment) antes de produção
+- Implementar opt-out imediato no primeiro contato
+- Registrar consentimento/recusa em audit_log
+
+---
+
 ## Próximas Decisões Pendentes
 
-1. **Obtenção de telefones para outbound** — BigData Corp? Neoway? Parceiros?
-2. **Ambiente de staging** — RDS separado ou schema isolado?
-3. **CI/CD** — GitHub Actions ou AWS CodePipeline?
-4. **Monitoramento** — CloudWatch suficiente ou adicionar Datadog/Grafana?
+1. **Ambiente de staging** — RDS separado ou schema isolado?
+2. **CI/CD** — GitHub Actions ou AWS CodePipeline?
+3. **Monitoramento** — CloudWatch suficiente ou adicionar Datadog/Grafana?

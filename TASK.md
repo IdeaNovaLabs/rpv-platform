@@ -186,6 +186,10 @@
 ## Backlog Futuro (Pós-MVP)
 
 ### Fase 2 — Escala
+- [ ] **Integração BigData Corp/Neoway** para enriquecimento de telefones
+- [ ] Lambda enrich_telefone (batch diário)
+- [ ] Tabela leads_enriquecidos
+- [ ] LIA (Legitimate Interest Assessment) para LGPD
 - [ ] SQS para fila de outbound (quando > 500 msgs/dia)
 - [ ] Provisioned concurrency para Lambdas críticas
 - [ ] Multi-região para disaster recovery
@@ -203,8 +207,15 @@
 
 | ID | Descrição | Responsável | Status |
 |----|-----------|-------------|--------|
-| B1 | Obtenção de telefones para outbound | Wagner | Pendente decisão |
+| ~~B1~~ | ~~Obtenção de telefones para outbound~~ | Wagner | Decidido: BigData Corp/Neoway |
 | B2 | Aprovação de templates Meta | Wagner | Aguardando submissão |
+| B3 | Validação LGPD para enrichment | Wagner | Pendente (consultar advogado) |
+
+## Decisões Registradas
+
+| Data | Decisão | Contexto |
+|------|---------|----------|
+| 2026-03-13 | BigData Corp/Neoway para telefones | Integrar após validar unit economics do MVP |
 
 ---
 
