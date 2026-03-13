@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL local
+  postgres:
+    image: postgres:16-alpine
+    container_name: rpv-postgres
+    environment:
+      POSTGRES_USER: rpv
+      POSTGRES_PASSWORD: rpv_dev_password
+      POSTGRES_DB: rpv_capital
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rpv -d rpv_capital"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack (AWS local)
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: rpv-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=secretsmanager,events,lambda,ecr,ecs,logs
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Bot WhatsApp (development)
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    container_name: rpv-bot
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://rpv:rpv_dev_password@postgres:5432/rpv_capital
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./bot:/app/bot
+      - ./motor:/app/motor
+      - ./.skills:/app/.skills
+    command: uvicorn bot.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ESAJ Scraper (for testing)
+  esaj:
+    build:
+      context: .
+      dockerfile: esaj_task/Dockerfile
+    container_name: rpv-esaj
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://rpv:rpv_dev_password@postgres:5432/rpv_capital
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - batch
+
+  # Test runner
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: rpv-tests
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://rpv:rpv_dev_password@postgres:5432/rpv_capital
+      - ENVIRONMENT=test
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    profiles:
+      - test
+
+volumes:
+  postgres_data:
+  localstack_data:
